@@ -1,0 +1,5 @@
+{
+  "name": "Golf Tracker Pro",
+  "description": "Track golf scores for 2-4 players with support for Skins, Match Play, Stroke Play, and handicap adjustments.",
+  "requestFramePermissions": []
+}
