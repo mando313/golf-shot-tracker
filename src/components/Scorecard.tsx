@@ -1,8 +1,9 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { GameSettings, Scores, Hole, SavedGame } from '../types';
 import { COURSES } from '../data/courses';
-import { ArrowLeft, Trophy, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trophy, Trash2, Smartphone } from 'lucide-react';
 import ConfirmModal from './ConfirmModal';
+import HoleCard from './HoleCard';
 
 type ScorecardProps = {
   key?: string;
@@ -23,6 +24,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
   const course = COURSES.find(c => c.id === settings.courseId)!;
   const [showConfirm, setShowConfirm] = useState(false);
   const [handicapAdjusted, setHandicapAdjusted] = useState(settings.handicapAdjusted);
+  const [showFullScorecard, setShowFullScorecard] = useState(false);
 
   useEffect(() => {
     if (!readOnly) {
@@ -314,7 +316,34 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
         )}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+      {/* Mobile card view */}
+      {!showFullScorecard && (
+        <HoleCard
+          settings={settings}
+          course={course}
+          scores={scores}
+          handicapAdjusted={handicapAdjusted}
+          readOnly={readOnly}
+          onScoreChange={handleScoreChange}
+          getNetScore={getNetScore}
+          standings={standings}
+          teamNames={teamNames}
+          onShowFullScorecard={() => setShowFullScorecard(true)}
+        />
+      )}
+
+      {/* Full scorecard table - always visible on desktop, toggleable on mobile */}
+      <div className={showFullScorecard ? '' : 'hidden md:block'}>
+        {showFullScorecard && (
+          <button
+            onClick={() => setShowFullScorecard(false)}
+            className="md:hidden w-full mb-4 py-3 flex items-center justify-center gap-2 bg-white border border-slate-200 rounded-xl text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors shadow-sm"
+          >
+            <Smartphone className="w-4 h-4" />
+            Back to Hole View
+          </button>
+        )}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
         <table className="w-full text-sm text-left">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
@@ -484,6 +513,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       {!readOnly && (
