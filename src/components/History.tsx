@@ -89,7 +89,22 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       grad.addColorStop(1, '#022c22');
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.roundRect(0, 0, W, H, 12);
+      // roundRect fallback for older browsers
+      if (typeof ctx.roundRect === 'function') {
+        ctx.roundRect(0, 0, W, H, 12);
+      } else {
+        const r = 12;
+        ctx.moveTo(r, 0);
+        ctx.lineTo(W - r, 0);
+        ctx.arcTo(W, 0, W, r, r);
+        ctx.lineTo(W, H - r);
+        ctx.arcTo(W, H, W - r, H, r);
+        ctx.lineTo(r, H);
+        ctx.arcTo(0, H, 0, H - r, r);
+        ctx.lineTo(0, r);
+        ctx.arcTo(0, 0, r, 0, r);
+        ctx.closePath();
+      }
       ctx.fill();
 
       // Header

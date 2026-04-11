@@ -18,8 +18,10 @@ type ScorecardProps = {
 export default function Scorecard({ settings, onBack, onClearData, onSaveScore, initialScores, readOnly }: ScorecardProps) {
   const [scores, setScores] = useState<Scores>(() => {
     if (initialScores) return initialScores;
-    const saved = localStorage.getItem('golf_scores');
-    return saved ? JSON.parse(saved) : {};
+    try {
+      const saved = localStorage.getItem('golf_scores');
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
   });
   const course = COURSES.find(c => c.id === settings.courseId)!;
   const [showConfirm, setShowConfirm] = useState(false);
@@ -602,7 +604,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
               }
 
               onSaveScore?.({
-                id: crypto.randomUUID(),
+                id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`,
                 date: now.toLocaleDateString(),
                 time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 settings: { ...settings, handicapAdjusted },

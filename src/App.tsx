@@ -6,18 +6,24 @@ import { GameSettings, SavedGame } from './types';
 
 export default function App() {
   const [settings, setSettings] = useState<GameSettings | null>(() => {
-    const saved = localStorage.getItem('golf_settings');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('golf_settings');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
   });
-  
+
   const [currentView, setCurrentView] = useState<'setup' | 'scorecard' | 'history'>(() => {
-    const saved = localStorage.getItem('golf_view');
-    return (saved === 'scorecard' || saved === 'history') ? saved : 'setup';
+    try {
+      const saved = localStorage.getItem('golf_view');
+      return (saved === 'scorecard' || saved === 'history') ? saved : 'setup';
+    } catch { return 'setup'; }
   });
 
   const [savedGames, setSavedGames] = useState<SavedGame[]>(() => {
-    const saved = localStorage.getItem('golf_history');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('golf_history');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
   });
 
   const [viewingGame, setViewingGame] = useState<SavedGame | null>(null);
