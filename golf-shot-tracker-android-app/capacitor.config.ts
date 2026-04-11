@@ -6,8 +6,8 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    // Load from GitHub Pages so the app always gets the latest version
-    url: 'https://mando313.github.io/golf-shot-tracker/',
+    // Load from Netlify so the app always gets the latest version
+    url: 'https://golftrackerpro.netlify.app/',
     cleartext: false,
   },
   plugins: {
