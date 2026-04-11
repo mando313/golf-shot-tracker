@@ -1,0 +1,16 @@
+node_modules/
+dist/
+*.local
+
+# Android build artifacts
+android/app/build/
+android/.gradle/
+android/build/
+android/local.properties
+android/.idea/
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
