@@ -6,6 +6,8 @@ import { browserslistToTargets } from 'lightningcss';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const isPagesDeployment = !!process.env.PAGES_DEPLOYMENT;
+
 export default defineConfig({
   base: process.env.BASE_URL || '/',
   css: {
@@ -20,7 +22,8 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    VitePWA({
+    // Skip PWA plugin for GitHub Pages deployment (Android app doesn't need service worker)
+    ...(!isPagesDeployment ? [VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon.svg'],
       manifest: {
@@ -68,7 +71,7 @@ export default defineConfig({
           },
         ],
       },
-    }),
+    })] : []),
   ],
   resolve: {
     alias: {
