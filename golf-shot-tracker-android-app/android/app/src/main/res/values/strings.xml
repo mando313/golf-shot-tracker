@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Golf Tracker Pro</string>
+    <string name="title_activity_main">Golf Tracker Pro</string>
+    <string name="package_name">com.golftrackerpro.app</string>
+    <string name="custom_url_scheme">com.golftrackerpro.app</string>
+</resources>
