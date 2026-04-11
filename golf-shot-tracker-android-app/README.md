@@ -55,7 +55,7 @@ npx cap open android
 
 ### 6. Build APK in Android Studio
 1. Wait for Gradle sync to complete (may take a few minutes on first run)
-2. Go to **Build > Build Bundle(s) / APK(s) > Build APK(s)**
+2. Go to **Build > Generate App Bundles or APKs > Build APK(s)**
 3. The APK will be generated at:
    `android/app/build/outputs/apk/debug/app-debug.apk`
 
