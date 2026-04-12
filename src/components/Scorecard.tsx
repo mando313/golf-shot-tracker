@@ -196,7 +196,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
   }, [settings.players, settings.playMode]);
 
   return (
-    <div className="max-w-6xl mx-auto p-4 md:p-6">
+    <div className="max-w-6xl mx-auto px-4 pt-10 pb-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
         <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
           <ArrowLeft className="w-5 h-5" />
