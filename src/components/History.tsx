@@ -232,7 +232,7 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
         if (!blob) { setSharingId(null); return; }
         const fileName = game.courseName.replace(/\s+/g, '_') + '_' + game.date.replace(/\//g, '-') + '.png';
         const file = new File([blob], fileName, { type: 'image/png' });
-        
+
         if (navigator.canShare?.({ files: [file] })) {
           try {
             await navigator.share({
@@ -265,16 +265,16 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
     <div className="max-w-4xl mx-auto px-4 pt-10 pb-4 md:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
+          <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
             <ArrowLeft className="w-5 h-5" />
             Back
           </button>
-          <h1 className="text-2xl font-semibold text-slate-900">Scores History</h1>
+          <h1 className="text-2xl font-semibold text-slate-100">Scores History</h1>
         </div>
         {selectedIds.size > 0 && (
           <button
             onClick={handleDeleteSelected}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-medium transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-red-950 text-red-400 hover:bg-red-900 rounded-xl font-medium transition-colors"
           >
             <Trash2 className="w-4 h-4" />
             Delete Selected ({selectedIds.size})
@@ -283,29 +283,29 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       </div>
 
       {savedGames.length === 0 ? (
-        <div className="bg-white p-12 rounded-2xl shadow-sm border border-slate-200 text-center">
-          <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h2 className="text-lg font-medium text-slate-900 mb-2">No saved games yet</h2>
-          <p className="text-slate-500">Complete a round and click "Save Scores" to see your history here.</p>
+        <div className="bg-slate-900 p-12 rounded-2xl shadow-sm border border-slate-700 text-center">
+          <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-4" />
+          <h2 className="text-lg font-medium text-slate-100 mb-2">No saved games yet</h2>
+          <p className="text-slate-400">Complete a round and click "Save Scores" to see your history here.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {savedGames.map((game) => (
-            <div key={game.id} className={`bg-white p-6 rounded-2xl shadow-sm border transition-colors ${selectedIds.has(game.id) ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-200'}`}>
+            <div key={game.id} className={`bg-slate-900 p-6 rounded-2xl shadow-sm border transition-colors ${selectedIds.has(game.id) ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-slate-700'}`}>
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div className="flex items-start gap-3">
                   <input
                     type="checkbox"
                     checked={selectedIds.has(game.id)}
                     onChange={() => toggleSelection(game.id)}
-                    className="mt-1.5 w-4 h-4 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                    className="mt-1.5 w-4 h-4 text-emerald-600 rounded border-slate-600 focus:ring-emerald-500 bg-slate-800"
                   />
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                      <MapPin className="w-5 h-5 text-emerald-600" />
+                    <h3 className="text-lg font-semibold text-slate-100 flex items-center gap-2">
+                      <MapPin className="w-5 h-5 text-emerald-500" />
                       {game.courseName}
                     </h3>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                    <div className="flex items-center gap-4 mt-2 text-sm text-slate-400">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
                         {game.date}
@@ -318,20 +318,20 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium">
+                  <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-sm font-medium">
                     {game.settings.gameFormat}
                   </span>
-                  <span className="text-sm text-slate-500 mt-1">
+                  <span className="text-sm text-slate-400 mt-1">
                     {game.settings.playMode} • {game.settings.numPlayers} Players
                   </span>
                 </div>
               </div>
-              
-              <div className="border-t border-slate-100 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+
+              <div className="border-t border-slate-800 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <div className="text-sm font-medium text-slate-700 mb-2">
+                  <div className="text-sm font-medium text-slate-300 mb-2">
                     {game.winnerSummary ? (
-                      <span className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded inline-flex items-center gap-1">
+                      <span className="text-emerald-400 bg-emerald-950 px-2 py-1 rounded inline-flex items-center gap-1">
                         <Trophy className="w-3 h-3" />
                         {game.winnerSummary}
                       </span>
@@ -341,7 +341,7 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {game.settings.players.map(p => (
-                      <span key={p.id} className="px-2 py-1 bg-slate-50 border border-slate-200 rounded text-sm text-slate-600">
+                      <span key={p.id} className="px-2 py-1 bg-slate-800 border border-slate-700 rounded text-sm text-slate-400">
                         {p.name} {game.settings.playMode === 'Teams' ? `(Team ${p.team})` : ''}
                       </span>
                     ))}
@@ -351,14 +351,14 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
                   <button
                     onClick={() => handleShareScores(game)}
                     disabled={sharingId === game.id}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-xl font-medium transition-colors whitespace-nowrap disabled:opacity-50"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-950 text-emerald-400 hover:bg-emerald-900 border border-emerald-800 rounded-xl font-medium transition-colors whitespace-nowrap disabled:opacity-50"
                   >
                     <Share2 className="w-4 h-4" />
                     {sharingId === game.id ? 'Generating...' : 'Share Scores'}
                   </button>
                   <button
                     onClick={() => onViewGame(game)}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200 rounded-xl font-medium transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-xl font-medium transition-colors whitespace-nowrap"
                   >
                     <Eye className="w-4 h-4" />
                     View Scorecard

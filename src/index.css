@@ -12,6 +12,7 @@ html, body {
 
 body {
   min-height: 100dvh;
+  background-color: #020617;
 }
 
 /* Hide number input spinners for cleaner mobile look */

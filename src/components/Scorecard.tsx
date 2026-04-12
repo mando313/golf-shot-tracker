@@ -48,7 +48,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
   const getNetScore = useCallback((gross: number, playerId: string, hole: Hole) => {
     if (!handicapAdjusted || gross === 0) return gross;
     const player = settings.players.find(p => p.id === playerId)!;
-    
+
     let strokesReceived = 0;
     if (settings.gameFormat === 'Skins' || settings.gameFormat === 'Match Play') {
       let h = player.handicap - 4;
@@ -83,7 +83,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
     course.holes.forEach(hole => {
       const holeScores = scores[hole.number] || {};
       const enteredPlayers = Object.keys(holeScores).filter(id => holeScores[id] > 0);
-      
+
       const worth = carryOver + 1;
       results.skinsHoleResults[hole.number] = { worth };
 
@@ -126,7 +126,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
           let minScore = Infinity;
           let minCount = 0;
           let winnerId = '';
-          
+
           Object.entries(netScores).forEach(([id, score]) => {
             if (score < minScore) {
               minScore = score;
@@ -183,12 +183,12 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
 
   const teamNames = useMemo(() => {
     if (settings.playMode !== 'Teams') return { A: 'Team A', B: 'Team B' };
-    
+
     const getFirstName = (fullName: string) => fullName.split(' ')[0];
-    
+
     const teamAPlayers = settings.players.filter(p => p.team === 'A').map(p => getFirstName(p.name));
     const teamBPlayers = settings.players.filter(p => p.team === 'B').map(p => getFirstName(p.name));
-    
+
     return {
       A: teamAPlayers.length > 0 ? teamAPlayers.join(' / ') : 'Team A',
       B: teamBPlayers.length > 0 ? teamBPlayers.join(' / ') : 'Team B'
@@ -198,24 +198,24 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
   return (
     <div className="max-w-6xl mx-auto px-4 pt-10 pb-4 md:p-6">
       <div className="flex items-center justify-between mb-6">
-        <button onClick={onBack} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors">
+        <button onClick={onBack} className="flex items-center gap-2 text-slate-400 hover:text-slate-200 transition-colors">
           <ArrowLeft className="w-5 h-5" />
           {readOnly ? 'Back to History' : 'Back to Setup'}
         </button>
         <div className="flex flex-col items-end gap-2">
-          <h1 className="text-2xl font-semibold text-slate-900 flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-emerald-600" />
+          <h1 className="text-2xl font-semibold text-slate-100 flex items-center gap-2">
+            <Trophy className="w-6 h-6 text-emerald-500" />
             {course.name}
           </h1>
-          <span className="text-sm text-slate-500 font-medium">{settings.selectedTee} Tees</span>
+          <span className="text-sm text-slate-400 font-medium">{settings.selectedTee} Tees</span>
           <button
             onClick={() => setHandicapAdjusted(!handicapAdjusted)}
             className="flex items-center gap-2 mt-1"
           >
-            <span className={`text-xs font-semibold uppercase tracking-wide ${handicapAdjusted ? 'text-emerald-700' : 'text-slate-400'}`}>
+            <span className={`text-xs font-semibold uppercase tracking-wide ${handicapAdjusted ? 'text-emerald-400' : 'text-slate-500'}`}>
               HCP Adjusted
             </span>
-            <div className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${handicapAdjusted ? 'bg-emerald-500' : 'bg-slate-300'}`}>
+            <div className={`relative w-10 h-[22px] rounded-full transition-colors duration-200 ${handicapAdjusted ? 'bg-emerald-500' : 'bg-slate-600'}`}>
               <div className={`absolute top-[3px] w-4 h-4 rounded-full bg-white shadow transition-all duration-200 ${handicapAdjusted ? 'left-[21px]' : 'left-[3px]'}`} />
             </div>
           </button>
@@ -223,10 +223,10 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
       </div>
 
       {settings.gameFormat === 'Match Play' && settings.playMode === 'Teams' && (
-        <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-lg mb-6 flex flex-col items-center justify-center text-center">
+        <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-lg mb-6 flex flex-col items-center justify-center text-center border border-slate-700">
           <div className="text-sm text-slate-400 font-medium uppercase tracking-widest mb-2">Current Match Status</div>
           <div className="text-4xl font-bold">
-            {standings.matchPlay.A > standings.matchPlay.B 
+            {standings.matchPlay.A > standings.matchPlay.B
               ? `${teamNames.A} Up ${standings.matchPlay.A - standings.matchPlay.B}`
               : standings.matchPlay.B > standings.matchPlay.A
               ? `${teamNames.B} Up ${standings.matchPlay.B - standings.matchPlay.A}`
@@ -235,27 +235,27 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
         </div>
       )}
 
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
-        <h2 className="text-lg font-medium text-slate-800 mb-4">Current Standings - {settings.gameFormat}</h2>
-        
+      <div className="bg-slate-900 p-6 rounded-2xl shadow-sm border border-slate-700 mb-6">
+        <h2 className="text-lg font-medium text-slate-200 mb-4">Current Standings - {settings.gameFormat}</h2>
+
         {settings.gameFormat === 'Stroke Play' && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {settings.playMode === 'Teams' ? (
               <>
-                <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-                  <div className="text-sm text-emerald-600 font-medium mb-1">{teamNames.A}</div>
-                  <div className="text-2xl font-bold text-emerald-900">{standings.teamTotals.A || '-'}</div>
+                <div className="p-4 bg-emerald-950 rounded-xl border border-emerald-800">
+                  <div className="text-sm text-emerald-400 font-medium mb-1">{teamNames.A}</div>
+                  <div className="text-2xl font-bold text-emerald-200">{standings.teamTotals.A || '-'}</div>
                 </div>
-                <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-                  <div className="text-sm text-blue-600 font-medium mb-1">{teamNames.B}</div>
-                  <div className="text-2xl font-bold text-blue-900">{standings.teamTotals.B || '-'}</div>
+                <div className="p-4 bg-blue-950 rounded-xl border border-blue-800">
+                  <div className="text-sm text-blue-400 font-medium mb-1">{teamNames.B}</div>
+                  <div className="text-2xl font-bold text-blue-200">{standings.teamTotals.B || '-'}</div>
                 </div>
               </>
             ) : (
               settings.players.map(p => (
-                <div key={p.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                  <div className="text-sm text-slate-600 font-medium mb-1">{p.name}</div>
-                  <div className="text-2xl font-bold text-slate-900">{standings.playerTotals[p.id] || '-'}</div>
+                <div key={p.id} className="p-4 bg-slate-800 rounded-xl border border-slate-700">
+                  <div className="text-sm text-slate-400 font-medium mb-1">{p.name}</div>
+                  <div className="text-2xl font-bold text-slate-100">{standings.playerTotals[p.id] || '-'}</div>
                 </div>
               ))
             )}
@@ -265,9 +265,9 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
         {settings.gameFormat === 'Match Play' && settings.playMode !== 'Teams' && (
           <div className="flex items-center gap-4">
             {settings.players.map(p => (
-              <div key={p.id} className="p-4 bg-slate-50 rounded-xl border border-slate-200 flex-1">
-                <div className="text-sm text-slate-600 font-medium mb-1">{p.name}</div>
-                <div className="text-2xl font-bold text-slate-900">{standings.matchPlay.playerWins[p.id]} holes won</div>
+              <div key={p.id} className="p-4 bg-slate-800 rounded-xl border border-slate-700 flex-1">
+                <div className="text-sm text-slate-400 font-medium mb-1">{p.name}</div>
+                <div className="text-2xl font-bold text-slate-100">{standings.matchPlay.playerWins[p.id]} holes won</div>
               </div>
             ))}
           </div>
@@ -280,25 +280,25 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                 <div className="text-slate-500 italic">No skins won yet.</div>
               ) : (
                 standings.skins.map((skin, idx) => (
-                  <div key={idx} className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm font-medium flex items-center gap-2">
+                  <div key={idx} className="px-3 py-1.5 bg-amber-950 border border-amber-800 rounded-lg text-amber-300 text-sm font-medium flex items-center gap-2">
                     Hole {skin.hole}: {skin.winner}
-                    {skin.carryOver > 0 && <span className="bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded text-xs">+{skin.carryOver}</span>}
+                    {skin.carryOver > 0 && <span className="bg-amber-800 text-amber-200 px-1.5 py-0.5 rounded text-xs">+{skin.carryOver}</span>}
                   </div>
                 ))
               )}
             </div>
-            <div className="flex gap-4 border-t border-slate-100 pt-4">
+            <div className="flex gap-4 border-t border-slate-700 pt-4">
               {settings.playMode === 'Teams' ? (
                 <>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-500">{teamNames.A} Skins</div>
-                    <div className="text-xl font-semibold text-slate-800">
+                    <div className="text-sm text-slate-400">{teamNames.A} Skins</div>
+                    <div className="text-xl font-semibold text-slate-200">
                       {standings.skins.filter(s => s.winner === 'Team A').reduce((acc, s) => acc + 1 + s.carryOver, 0)}
                     </div>
                   </div>
                   <div className="flex-1">
-                    <div className="text-sm text-slate-500">{teamNames.B} Skins</div>
-                    <div className="text-xl font-semibold text-slate-800">
+                    <div className="text-sm text-slate-400">{teamNames.B} Skins</div>
+                    <div className="text-xl font-semibold text-slate-200">
                       {standings.skins.filter(s => s.winner === 'Team B').reduce((acc, s) => acc + 1 + s.carryOver, 0)}
                     </div>
                   </div>
@@ -306,8 +306,8 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
               ) : (
                 settings.players.map(p => (
                   <div key={p.id} className="flex-1">
-                    <div className="text-sm text-slate-500">{p.name}</div>
-                    <div className="text-xl font-semibold text-slate-800">
+                    <div className="text-sm text-slate-400">{p.name}</div>
+                    <div className="text-xl font-semibold text-slate-200">
                       {standings.skins.filter(s => s.winner === p.name).reduce((acc, s) => acc + 1 + s.carryOver, 0)}
                     </div>
                   </div>
@@ -339,26 +339,26 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
         {showFullScorecard && (
           <button
             onClick={() => setShowFullScorecard(false)}
-            className="md:hidden w-full mb-4 py-3 flex items-center justify-center gap-2 bg-white border border-slate-200 rounded-xl text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors shadow-sm"
+            className="md:hidden w-full mb-4 py-3 flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 font-medium text-sm hover:bg-slate-800 transition-colors shadow-sm"
           >
             <Smartphone className="w-4 h-4" />
             Back to Hole View
           </button>
         )}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+        <div className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-slate-50 border-b border-slate-200">
+          <thead className="bg-slate-800 border-b border-slate-700">
             <tr>
-              <th className="px-4 py-3 font-medium text-slate-600">Hole</th>
-              <th className="px-4 py-3 font-medium text-slate-600">Yds</th>
-              <th className="px-4 py-3 font-medium text-slate-600">Par</th>
-              <th className="px-4 py-3 font-medium text-slate-600">HCP</th>
+              <th className="px-4 py-3 font-medium text-slate-400">Hole</th>
+              <th className="px-4 py-3 font-medium text-slate-400">Yds</th>
+              <th className="px-4 py-3 font-medium text-slate-400">Par</th>
+              <th className="px-4 py-3 font-medium text-slate-400">HCP</th>
               {settings.players.map(p => (
-                <th key={p.id} className="px-4 py-3 font-medium text-slate-900">
+                <th key={p.id} className="px-4 py-3 font-medium text-slate-100">
                   <div className="flex flex-col">
                     <span>{p.name}</span>
                     {settings.playMode === 'Teams' && (
-                      <span className={p.team === 'A' ? 'text-emerald-600 text-xs' : 'text-blue-600 text-xs'}>
+                      <span className={p.team === 'A' ? 'text-emerald-400 text-xs' : 'text-blue-400 text-xs'}>
                         {p.team === 'A' ? teamNames.A : teamNames.B}
                       </span>
                     )}
@@ -369,20 +369,20 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                 </th>
               ))}
               {settings.gameFormat === 'Match Play' && settings.playMode === 'Teams' && (
-                <th className="px-4 py-3 font-medium text-slate-600">Result</th>
+                <th className="px-4 py-3 font-medium text-slate-400">Result</th>
               )}
               {settings.gameFormat === 'Skins' && (
-                <th className="px-4 py-3 font-medium text-slate-600">Skins</th>
+                <th className="px-4 py-3 font-medium text-slate-400">Skins</th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-800">
             {course.holes.map(hole => (
-              <tr key={hole.number} className="hover:bg-slate-50/50">
-                <td className="px-4 py-3 font-medium text-slate-900">{hole.number}</td>
-                <td className="px-4 py-3 text-slate-600">{hole.yardages[settings.selectedTee] || '-'}</td>
-                <td className="px-4 py-3 text-slate-600">{hole.par}</td>
-                <td className="px-4 py-3 text-slate-600">{hole.handicap}</td>
+              <tr key={hole.number} className="hover:bg-slate-800/50">
+                <td className="px-4 py-3 font-medium text-slate-100">{hole.number}</td>
+                <td className="px-4 py-3 text-slate-400">{hole.yardages[settings.selectedTee] || '-'}</td>
+                <td className="px-4 py-3 text-slate-400">{hole.par}</td>
+                <td className="px-4 py-3 text-slate-400">{hole.handicap}</td>
                 {settings.players.map(p => {
                   const gross = scores[hole.number]?.[p.id] || '';
                   const net = gross ? getNetScore(Number(gross), p.id, hole) : null;
@@ -396,10 +396,10 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                           value={gross}
                           onChange={(e) => handleScoreChange(hole.number, p.id, e.target.value)}
                           disabled={readOnly}
-                          className={`w-16 p-2 bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-center ${readOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                          className={`w-16 p-2 bg-slate-800 border border-slate-700 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-center text-slate-200 ${readOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
                         />
                         {handicapAdjusted && net !== null && net !== Number(gross) && (
-                          <span className="text-xs font-medium text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                          <span className="text-xs font-medium text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded">
                             {net}
                           </span>
                         )}
@@ -410,13 +410,13 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                 {settings.gameFormat === 'Match Play' && settings.playMode === 'Teams' && (
                   <td className="px-4 py-3 font-medium">
                     {standings.matchPlay.holeWinners[hole.number] === 'A' ? (
-                      <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs">{teamNames.A}</span>
+                      <span className="text-emerald-400 bg-emerald-950 px-2 py-1 rounded text-xs">{teamNames.A}</span>
                     ) : standings.matchPlay.holeWinners[hole.number] === 'B' ? (
-                      <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded text-xs">{teamNames.B}</span>
+                      <span className="text-blue-400 bg-blue-950 px-2 py-1 rounded text-xs">{teamNames.B}</span>
                     ) : standings.matchPlay.holeWinners[hole.number] === 'Tie' ? (
-                      <span className="text-slate-500 bg-slate-100 px-2 py-1 rounded text-xs">Halved</span>
+                      <span className="text-slate-400 bg-slate-800 px-2 py-1 rounded text-xs">Halved</span>
                     ) : (
-                      <span className="text-slate-300">-</span>
+                      <span className="text-slate-600">-</span>
                     )}
                   </td>
                 )}
@@ -424,30 +424,30 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                   <td className="px-4 py-3 font-medium">
                     {(() => {
                       const res = standings.skinsHoleResults[hole.number];
-                      if (!res) return <span className="text-slate-400 text-xs">Worth {standings.skinsHoleResults[hole.number]?.worth || 1}</span>;
-                      
+                      if (!res) return <span className="text-slate-500 text-xs">Worth {standings.skinsHoleResults[hole.number]?.worth || 1}</span>;
+
                       if (res.isTie) {
-                        return <span className="text-amber-600 bg-amber-50 px-2 py-1 rounded text-xs">Carried Over ({res.carryOver})</span>;
+                        return <span className="text-amber-400 bg-amber-950 px-2 py-1 rounded text-xs">Carried Over ({res.carryOver})</span>;
                       }
-                      
+
                       if (res.winner) {
                         return (
-                          <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs">
+                          <span className="text-emerald-400 bg-emerald-950 px-2 py-1 rounded text-xs">
                             {res.winner} won {res.skinsWon}
                           </span>
                         );
                       }
-                      
-                      return <span className="text-slate-400 text-xs">Worth {res.worth}</span>;
+
+                      return <span className="text-slate-500 text-xs">Worth {res.worth}</span>;
                     })()}
                   </td>
                 )}
               </tr>
             ))}
             {/* Front 9 Total */}
-            <tr className="bg-slate-100 border-t-2 border-slate-300">
-              <td className="px-4 py-2 font-bold text-slate-700" colSpan={2}>Front 9</td>
-              <td className="px-4 py-2 font-bold text-slate-600">{course.holes.slice(0, 9).reduce((s, h) => s + h.par, 0)}</td>
+            <tr className="bg-slate-800 border-t-2 border-slate-600">
+              <td className="px-4 py-2 font-bold text-slate-300" colSpan={2}>Front 9</td>
+              <td className="px-4 py-2 font-bold text-slate-400">{course.holes.slice(0, 9).reduce((s, h) => s + h.par, 0)}</td>
               <td className="px-4 py-2"></td>
               {settings.players.map(p => {
                 const grossFront = course.holes.slice(0, 9).reduce((s, h) => s + (scores[h.number]?.[p.id] || 0), 0);
@@ -456,10 +456,10 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                   return s + (g ? getNetScore(g, p.id, h) : 0);
                 }, 0);
                 return (
-                  <td key={p.id} className="px-4 py-2 font-bold text-slate-800">
+                  <td key={p.id} className="px-4 py-2 font-bold text-slate-200">
                     {grossFront || '-'}
                     {handicapAdjusted && netFront !== grossFront && grossFront > 0 && (
-                      <span className="text-xs font-semibold text-emerald-600 ml-1">({netFront})</span>
+                      <span className="text-xs font-semibold text-emerald-400 ml-1">({netFront})</span>
                     )}
                   </td>
                 );
@@ -468,9 +468,9 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
               {settings.gameFormat === 'Skins' && <td className="px-4 py-2"></td>}
             </tr>
             {/* Back 9 Total */}
-            <tr className="bg-slate-100">
-              <td className="px-4 py-2 font-bold text-slate-700" colSpan={2}>Back 9</td>
-              <td className="px-4 py-2 font-bold text-slate-600">{course.holes.slice(9, 18).reduce((s, h) => s + h.par, 0)}</td>
+            <tr className="bg-slate-800">
+              <td className="px-4 py-2 font-bold text-slate-300" colSpan={2}>Back 9</td>
+              <td className="px-4 py-2 font-bold text-slate-400">{course.holes.slice(9, 18).reduce((s, h) => s + h.par, 0)}</td>
               <td className="px-4 py-2"></td>
               {settings.players.map(p => {
                 const grossBack = course.holes.slice(9, 18).reduce((s, h) => s + (scores[h.number]?.[p.id] || 0), 0);
@@ -479,10 +479,10 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                   return s + (g ? getNetScore(g, p.id, h) : 0);
                 }, 0);
                 return (
-                  <td key={p.id} className="px-4 py-2 font-bold text-slate-800">
+                  <td key={p.id} className="px-4 py-2 font-bold text-slate-200">
                     {grossBack || '-'}
                     {handicapAdjusted && netBack !== grossBack && grossBack > 0 && (
-                      <span className="text-xs font-semibold text-emerald-600 ml-1">({netBack})</span>
+                      <span className="text-xs font-semibold text-emerald-400 ml-1">({netBack})</span>
                     )}
                   </td>
                 );
@@ -491,9 +491,9 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
               {settings.gameFormat === 'Skins' && <td className="px-4 py-2"></td>}
             </tr>
             {/* Grand Total */}
-            <tr className="bg-emerald-50 border-t-2 border-emerald-200">
-              <td className="px-4 py-3 font-bold text-emerald-800 text-base" colSpan={2}>Total</td>
-              <td className="px-4 py-3 font-bold text-emerald-700 text-base">{course.holes.reduce((s, h) => s + h.par, 0)}</td>
+            <tr className="bg-emerald-950 border-t-2 border-emerald-800">
+              <td className="px-4 py-3 font-bold text-emerald-300 text-base" colSpan={2}>Total</td>
+              <td className="px-4 py-3 font-bold text-emerald-400 text-base">{course.holes.reduce((s, h) => s + h.par, 0)}</td>
               <td className="px-4 py-3"></td>
               {settings.players.map(p => {
                 const grossTotal = course.holes.reduce((s, h) => s + (scores[h.number]?.[p.id] || 0), 0);
@@ -502,10 +502,10 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
                   return s + (g ? getNetScore(g, p.id, h) : 0);
                 }, 0);
                 return (
-                  <td key={p.id} className="px-4 py-3 font-bold text-emerald-900 text-base">
+                  <td key={p.id} className="px-4 py-3 font-bold text-emerald-200 text-base">
                     {grossTotal || '-'}
                     {handicapAdjusted && netTotal !== grossTotal && grossTotal > 0 && (
-                      <span className="text-sm font-bold text-emerald-600 ml-1">({netTotal})</span>
+                      <span className="text-sm font-bold text-emerald-400 ml-1">({netTotal})</span>
                     )}
                   </td>
                 );
@@ -621,7 +621,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
 
           <button
             onClick={() => setShowConfirm(true)}
-            className="flex items-center gap-2 px-6 py-3 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-medium transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-red-950 text-red-400 hover:bg-red-900 rounded-xl font-medium transition-colors"
           >
             <Trash2 className="w-5 h-5" />
             Clear Data
@@ -629,7 +629,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
         </div>
       )}
 
-      <ConfirmModal 
+      <ConfirmModal
         isOpen={showConfirm}
         message="Are you sure you want to clear all data and start over?"
         onConfirm={() => {

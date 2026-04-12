@@ -116,15 +116,15 @@ export default function HoleCard({
   };
 
   const overUnderColor = (diff: number) => {
-    if (diff < 0) return 'text-red-600';
-    if (diff === 0) return 'text-emerald-600';
-    return 'text-blue-600';
+    if (diff < 0) return 'text-red-400';
+    if (diff === 0) return 'text-emerald-400';
+    return 'text-blue-400';
   };
 
   const overUnderBg = (diff: number) => {
-    if (diff < 0) return 'bg-red-50 border-red-200';
-    if (diff === 0) return 'bg-emerald-50 border-emerald-200';
-    return 'bg-blue-50 border-blue-200';
+    if (diff < 0) return 'bg-red-950 border-red-800';
+    if (diff === 0) return 'bg-emerald-950 border-emerald-800';
+    return 'bg-blue-950 border-blue-800';
   };
 
   // Score label relative to par for a single hole
@@ -132,12 +132,12 @@ export default function HoleCard({
     if (gross === 0) return null;
     const net = gross; // We show label based on actual strokes
     const diff = net - par;
-    if (diff <= -2) return { label: 'Eagle', color: 'text-amber-600' };
-    if (diff === -1) return { label: 'Birdie', color: 'text-red-600' };
-    if (diff === 0) return { label: 'Par', color: 'text-emerald-600' };
-    if (diff === 1) return { label: 'Bogey', color: 'text-blue-600' };
-    if (diff === 2) return { label: 'Dbl Bogey', color: 'text-blue-800' };
-    return { label: `+${diff}`, color: 'text-slate-500' };
+    if (diff <= -2) return { label: 'Eagle', color: 'text-amber-400' };
+    if (diff === -1) return { label: 'Birdie', color: 'text-red-400' };
+    if (diff === 0) return { label: 'Par', color: 'text-emerald-400' };
+    if (diff === 1) return { label: 'Bogey', color: 'text-blue-400' };
+    if (diff === 2) return { label: 'Dbl Bogey', color: 'text-blue-300' };
+    return { label: `+${diff}`, color: 'text-slate-400' };
   };
 
   return (
@@ -154,8 +154,8 @@ export default function HoleCard({
                 i === currentHoleIndex
                   ? 'bg-emerald-600 text-white scale-110 shadow-md'
                   : hasScore
-                  ? 'bg-emerald-100 text-emerald-700 border border-emerald-300'
-                  : 'bg-slate-100 text-slate-500 border border-slate-200'
+                  ? 'bg-emerald-900 text-emerald-400 border border-emerald-700'
+                  : 'bg-slate-800 text-slate-500 border border-slate-700'
               }`}
             >
               {h.number}
@@ -169,10 +169,10 @@ export default function HoleCard({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden"
+        className="bg-slate-900 rounded-2xl shadow-sm border border-slate-700 overflow-hidden"
       >
         {/* Hole header */}
-        <div className="bg-slate-900 text-white p-4">
+        <div className="bg-slate-950 text-white p-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => goToHole(currentHoleIndex - 1)}
@@ -186,11 +186,11 @@ export default function HoleCard({
                 {currentHoleIndex < 9 ? 'Front 9' : 'Back 9'}
               </div>
               <div className="text-3xl font-bold">Hole {hole.number}</div>
-              <div className="flex items-center justify-center gap-4 mt-1 text-sm text-slate-300">
+              <div className="flex items-center justify-center gap-4 mt-1 text-sm text-slate-400">
                 <span>Par {hole.par}</span>
-                <span className="w-1 h-1 bg-slate-500 rounded-full"></span>
+                <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
                 <span>{hole.yardages[settings.selectedTee] || '-'} yds</span>
-                <span className="w-1 h-1 bg-slate-500 rounded-full"></span>
+                <span className="w-1 h-1 bg-slate-600 rounded-full"></span>
                 <span>HCP {hole.handicap}</span>
               </div>
             </div>
@@ -208,8 +208,8 @@ export default function HoleCard({
         {holeWinner && (
           <div className={`px-4 py-2 text-center text-sm font-semibold ${
             holeWinner.isTie
-              ? 'bg-slate-100 text-slate-600'
-              : 'bg-amber-50 text-amber-700 border-b border-amber-200'
+              ? 'bg-slate-800 text-slate-400'
+              : 'bg-amber-950 text-amber-300 border-b border-amber-800'
           }`}>
             {holeWinner.isTie ? (
               'Hole Tied'
@@ -223,7 +223,7 @@ export default function HoleCard({
         )}
 
         {/* Player scores */}
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-slate-800">
           {settings.players.map(p => {
             const gross = scores[hole.number]?.[p.id] || 0;
             const net = gross > 0 && handicapAdjusted ? getNetScore(gross, p.id, hole) : null;
@@ -236,10 +236,10 @@ export default function HoleCard({
                   {/* Player name + over/under */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-slate-900 text-lg truncate">{p.name}</span>
+                      <span className="font-semibold text-slate-100 text-lg truncate">{p.name}</span>
                       {settings.playMode === 'Teams' && (
                         <span className={`text-xs font-medium px-1.5 py-0.5 rounded ${
-                          p.team === 'A' ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'
+                          p.team === 'A' ? 'bg-emerald-950 text-emerald-400' : 'bg-blue-950 text-blue-400'
                         }`}>
                           {p.team === 'A' ? 'A' : 'B'}
                         </span>
@@ -251,10 +251,10 @@ export default function HoleCard({
                           {formatOverUnder(overUnder.diff)}
                         </span>
                       ) : (
-                        <span className="text-sm text-slate-400">No scores yet</span>
+                        <span className="text-sm text-slate-500">No scores yet</span>
                       )}
                       {overUnder && (
-                        <span className="text-xs text-slate-400">
+                        <span className="text-xs text-slate-500">
                           ({overUnder.totalScore} thru {overUnder.holesPlayed})
                         </span>
                       )}
@@ -271,7 +271,7 @@ export default function HoleCard({
                     {!readOnly && (
                       <button
                         onClick={() => adjustScore(p.id, -1)}
-                        className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200 transition-colors"
+                        className="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center active:bg-slate-700 transition-colors"
                       >
                         <Minus className="w-4 h-4" />
                       </button>
@@ -285,10 +285,10 @@ export default function HoleCard({
                         value={gross || ''}
                         onChange={(e) => onScoreChange(hole.number, p.id, e.target.value)}
                         disabled={readOnly}
-                        className={`w-16 h-14 text-2xl font-bold text-center bg-slate-50 border-2 border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none ${readOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-16 h-14 text-2xl font-bold text-center bg-slate-800 border-2 border-slate-700 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-slate-100 ${readOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
                       />
                       {handicapAdjusted && net !== null && net !== gross && (
-                        <span className="text-xs font-semibold text-emerald-600 mt-0.5">
+                        <span className="text-xs font-semibold text-emerald-400 mt-0.5">
                           Net: {net}
                         </span>
                       )}
@@ -296,7 +296,7 @@ export default function HoleCard({
                     {!readOnly && (
                       <button
                         onClick={() => adjustScore(p.id, 1)}
-                        className="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center active:bg-slate-200 transition-colors"
+                        className="w-10 h-10 rounded-xl bg-slate-800 text-slate-400 flex items-center justify-center active:bg-slate-700 transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                       </button>
@@ -309,8 +309,8 @@ export default function HoleCard({
         </div>
 
         {/* Overall standings summary */}
-        <div className="bg-slate-50 border-t border-slate-200 p-4">
-          <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Overall Standings</div>
+        <div className="bg-slate-800 border-t border-slate-700 p-4">
+          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Overall Standings</div>
           <div className="flex flex-wrap gap-3">
             {settings.players.map(p => {
               const overUnder = getOverUnderPar(p.id);
@@ -319,11 +319,11 @@ export default function HoleCard({
                 <div
                   key={p.id}
                   className={`flex-1 min-w-[80px] p-2.5 rounded-xl border text-center ${
-                    overUnder ? overUnderBg(overUnder.diff) : 'bg-white border-slate-200'
+                    overUnder ? overUnderBg(overUnder.diff) : 'bg-slate-900 border-slate-700'
                   }`}
                 >
-                  <div className="text-xs text-slate-600 font-medium truncate">{p.name}</div>
-                  <div className="text-lg font-bold text-slate-900">{totalGross || '-'}</div>
+                  <div className="text-xs text-slate-400 font-medium truncate">{p.name}</div>
+                  <div className="text-lg font-bold text-slate-100">{totalGross || '-'}</div>
                   {overUnder && (
                     <div className={`text-xs font-bold ${overUnderColor(overUnder.diff)}`}>
                       {formatOverUnder(overUnder.diff)}
@@ -336,7 +336,7 @@ export default function HoleCard({
 
           {/* Game format specific standings */}
           {settings.gameFormat === 'Match Play' && settings.playMode === 'Teams' && (
-            <div className="mt-3 text-center text-sm font-semibold text-slate-700">
+            <div className="mt-3 text-center text-sm font-semibold text-slate-300">
               {standings.matchPlay.A > standings.matchPlay.B
                 ? `${teamNames.A} Up ${standings.matchPlay.A - standings.matchPlay.B}`
                 : standings.matchPlay.B > standings.matchPlay.A
@@ -348,7 +348,7 @@ export default function HoleCard({
           {settings.gameFormat === 'Match Play' && settings.playMode !== 'Teams' && (
             <div className="mt-3 flex flex-wrap gap-2 justify-center">
               {settings.players.map(p => (
-                <span key={p.id} className="text-xs font-medium text-slate-600">
+                <span key={p.id} className="text-xs font-medium text-slate-400">
                   {p.name}: {standings.matchPlay.playerWins[p.id]} won
                 </span>
               ))}
@@ -358,7 +358,7 @@ export default function HoleCard({
           {settings.gameFormat === 'Skins' && standings.skins.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
               {standings.skins.map((skin: any, idx: number) => (
-                <span key={idx} className="px-2 py-1 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-xs font-medium">
+                <span key={idx} className="px-2 py-1 bg-amber-950 border border-amber-800 rounded-lg text-amber-300 text-xs font-medium">
                   #{skin.hole}: {skin.winner}{skin.carryOver > 0 ? ` (+${skin.carryOver})` : ''}
                 </span>
               ))}
@@ -370,7 +370,7 @@ export default function HoleCard({
       {/* View full scorecard button */}
       <button
         onClick={onShowFullScorecard}
-        className="w-full mt-4 py-3 flex items-center justify-center gap-2 bg-white border border-slate-200 rounded-xl text-slate-700 font-medium text-sm hover:bg-slate-50 transition-colors shadow-sm"
+        className="w-full mt-4 py-3 flex items-center justify-center gap-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-300 font-medium text-sm hover:bg-slate-800 transition-colors shadow-sm"
       >
         <Table2 className="w-4 h-4" />
         View Full Scorecard

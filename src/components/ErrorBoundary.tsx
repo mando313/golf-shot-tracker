@@ -23,9 +23,9 @@ class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 32, fontFamily: 'system-ui, sans-serif', textAlign: 'center' }}>
+        <div style={{ padding: 32, fontFamily: 'system-ui, sans-serif', textAlign: 'center', backgroundColor: '#020617', color: '#e2e8f0', minHeight: '100dvh' }}>
           <h1 style={{ fontSize: 24, marginBottom: 16 }}>Something went wrong</h1>
-          <p style={{ color: '#666', marginBottom: 16 }}>{this.state.error?.message}</p>
+          <p style={{ color: '#94a3b8', marginBottom: 16 }}>{this.state.error?.message}</p>
           <button
             onClick={() => {
               localStorage.clear();
