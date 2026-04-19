@@ -63,19 +63,38 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       const holes = course.holes;
       const hcp = game.settings.handicapAdjusted;
 
+      // Pre-compute per-player totals and whether any net differs from gross
+      const playerStats = players.map(p => {
+        let frontGross = 0, frontNet = 0, backGross = 0, backNet = 0;
+        const cells: { gross: number; net: number }[] = [];
+        for (let i = 0; i < 18; i++) {
+          const hole = holes[i];
+          const gross = game.scores[hole.number]?.[p.id] || 0;
+          const net = gross ? getNetScoreForShare(gross, p.id, hole, game) : 0;
+          cells.push({ gross, net });
+          if (i < 9) { frontGross += gross; frontNet += net; }
+          else { backGross += gross; backNet += net; }
+        }
+        return { player: p, cells, frontGross, frontNet, backGross, backNet };
+      });
+      const anyNetDiffers = hcp && playerStats.some(s =>
+        s.frontGross !== s.frontNet || s.backGross !== s.backNet
+      );
+      const showNet = hcp && anyNetDiffers;
+
       // Layout constants
       const scale = 2;
-      const colW = 36;
-      const nameW = 82;
+      const colW = 38;
+      const nameW = 104;
       const extraCols = 3; // OUT, IN, TOT
       const dataCols = 18 + extraCols;
       const padX = 16;
       const W = nameW + dataCols * colW + padX * 2;
-      const rowH = 28;
-      const headerH = 72;
-      const footerH = 36;
-      const numDataRows = 2 + players.length; // hole nums + par + players
-      const H = headerH + numDataRows * rowH + footerH;
+      const headerRowH = 26;
+      const playerRowH = showNet ? 40 : 28;
+      const headerH = game.winnerSummary ? 82 : 62;
+      const footerH = 30;
+      const H = headerH + headerRowH * 2 + playerRowH * players.length + footerH;
 
       const canvas = document.createElement('canvas');
       canvas.width = W * scale;
@@ -89,7 +108,6 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       grad.addColorStop(1, '#022c22');
       ctx.fillStyle = grad;
       ctx.beginPath();
-      // roundRect fallback for older browsers
       if (typeof ctx.roundRect === 'function') {
         ctx.roundRect(0, 0, W, H, 12);
       } else {
@@ -108,155 +126,212 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       ctx.fill();
 
       // Header
+      ctx.textBaseline = 'alphabetic';
       ctx.fillStyle = '#10b981';
       ctx.font = 'bold 17px system-ui, -apple-system, sans-serif';
+      ctx.textAlign = 'left';
       ctx.fillText('\u26f3  ' + game.courseName, padX, 26);
       ctx.fillStyle = '#9ca3af';
       ctx.font = '500 11px system-ui, -apple-system, sans-serif';
       ctx.fillText(game.date + '  \u2022  ' + game.time + '  \u2022  ' + game.settings.gameFormat + '  \u2022  ' + game.settings.selectedTee + ' Tees', padX, 44);
-      if (hcp) {
+      if (showNet) {
         ctx.fillStyle = '#34d399';
         ctx.font = 'bold 9px system-ui, -apple-system, sans-serif';
-        ctx.fillText('HCP ADJUSTED', W - padX - 72, 44);
+        ctx.textAlign = 'right';
+        ctx.fillText('GROSS / NET', W - padX, 44);
+        ctx.textAlign = 'left';
+      } else if (hcp) {
+        ctx.fillStyle = '#34d399';
+        ctx.font = 'bold 9px system-ui, -apple-system, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('HCP ADJUSTED', W - padX, 44);
+        ctx.textAlign = 'left';
       }
       if (game.winnerSummary) {
         ctx.fillStyle = '#fbbf24';
         ctx.font = 'bold 11px system-ui, -apple-system, sans-serif';
-        ctx.fillText('\uD83C\uDFC6 ' + game.winnerSummary, padX, 62);
+        ctx.fillText('\uD83C\uDFC6 ' + game.winnerSummary, padX, 64);
       }
 
       const tableY = headerH;
       const tableX = padX;
 
-      const drawCell = (x: number, y: number, w: number, h: number, text: string, opts: {
-        bg?: string, color?: string, bold?: boolean, fontSize?: number, align?: CanvasTextAlign
+      const drawText = (text: string, x: number, y: number, opts: {
+        color?: string, bold?: boolean, fontSize?: number, align?: CanvasTextAlign
       } = {}) => {
-        if (opts.bg) {
-          ctx.fillStyle = opts.bg;
-          ctx.fillRect(x, y, w, h);
-        }
         ctx.fillStyle = opts.color || '#e5e7eb';
         ctx.font = (opts.bold ? 'bold' : '500') + ' ' + (opts.fontSize || 10) + 'px system-ui, -apple-system, sans-serif';
         ctx.textAlign = opts.align || 'center';
-        const tx = opts.align === 'left' ? x + 4 : x + w / 2;
-        ctx.fillText(text, tx, y + h / 2 + 4);
-        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x, y);
+      };
+
+      const fillRect = (x: number, y: number, w: number, h: number, color: string) => {
+        ctx.fillStyle = color;
+        ctx.fillRect(x, y, w, h);
       };
 
       // Row 1: Hole numbers
       const row0Y = tableY;
-      drawCell(tableX, row0Y, nameW, rowH, '', { bg: '#0f362b' });
+      fillRect(tableX, row0Y, nameW + dataCols * colW, headerRowH, '#0f362b');
       for (let i = 0; i < 9; i++) {
-        drawCell(tableX + nameW + i * colW, row0Y, colW, rowH, String(i + 1), { bg: '#0f362b', color: '#34d399', bold: true });
+        drawText(String(i + 1), tableX + nameW + i * colW + colW / 2, row0Y + headerRowH / 2, { color: '#34d399', bold: true });
       }
-      drawCell(tableX + nameW + 9 * colW, row0Y, colW, rowH, 'OUT', { bg: '#134e3a', color: '#ffffff', bold: true, fontSize: 9 });
+      fillRect(tableX + nameW + 9 * colW, row0Y, colW, headerRowH, '#134e3a');
+      drawText('OUT', tableX + nameW + 9 * colW + colW / 2, row0Y + headerRowH / 2, { color: '#ffffff', bold: true, fontSize: 9 });
       for (let i = 0; i < 9; i++) {
-        drawCell(tableX + nameW + (10 + i) * colW, row0Y, colW, rowH, String(i + 10), { bg: '#0f362b', color: '#fbbf24', bold: true });
+        drawText(String(i + 10), tableX + nameW + (10 + i) * colW + colW / 2, row0Y + headerRowH / 2, { color: '#fbbf24', bold: true });
       }
-      drawCell(tableX + nameW + 19 * colW, row0Y, colW, rowH, 'IN', { bg: '#134e3a', color: '#ffffff', bold: true, fontSize: 9 });
-      drawCell(tableX + nameW + 20 * colW, row0Y, colW, rowH, 'TOT', { bg: '#134e3a', color: '#ffffff', bold: true, fontSize: 9 });
+      fillRect(tableX + nameW + 19 * colW, row0Y, colW, headerRowH, '#134e3a');
+      drawText('IN', tableX + nameW + 19 * colW + colW / 2, row0Y + headerRowH / 2, { color: '#ffffff', bold: true, fontSize: 9 });
+      fillRect(tableX + nameW + 20 * colW, row0Y, colW, headerRowH, '#134e3a');
+      drawText('TOT', tableX + nameW + 20 * colW + colW / 2, row0Y + headerRowH / 2, { color: '#ffffff', bold: true, fontSize: 9 });
 
       // Row 2: Par
-      const row1Y = tableY + rowH;
-      drawCell(tableX, row1Y, nameW, rowH, 'Par', { bg: '#0d2f24', color: '#9ca3af', bold: true, align: 'left' });
+      const row1Y = tableY + headerRowH;
+      fillRect(tableX, row1Y, nameW, headerRowH, '#0d2f24');
+      drawText('Par', tableX + 6, row1Y + headerRowH / 2, { color: '#9ca3af', bold: true, align: 'left' });
       const parFront = holes.slice(0, 9).reduce((s, h) => s + h.par, 0);
       const parBack = holes.slice(9).reduce((s, h) => s + h.par, 0);
-      for (let i = 0; i < 9; i++) {
-        drawCell(tableX + nameW + i * colW, row1Y, colW, rowH, String(holes[i].par), { bg: '#0d2f24', color: '#9ca3af' });
+      for (let i = 0; i < 18; i++) {
+        const colIdx = i < 9 ? i : i + 1;
+        fillRect(tableX + nameW + colIdx * colW, row1Y, colW, headerRowH, '#0d2f24');
+        drawText(String(holes[i].par), tableX + nameW + colIdx * colW + colW / 2, row1Y + headerRowH / 2, { color: '#9ca3af' });
       }
-      drawCell(tableX + nameW + 9 * colW, row1Y, colW, rowH, String(parFront), { bg: '#103a2e', color: '#d1d5db', bold: true });
-      for (let i = 0; i < 9; i++) {
-        drawCell(tableX + nameW + (10 + i) * colW, row1Y, colW, rowH, String(holes[9 + i].par), { bg: '#0d2f24', color: '#9ca3af' });
-      }
-      drawCell(tableX + nameW + 19 * colW, row1Y, colW, rowH, String(parBack), { bg: '#103a2e', color: '#d1d5db', bold: true });
-      drawCell(tableX + nameW + 20 * colW, row1Y, colW, rowH, String(parFront + parBack), { bg: '#103a2e', color: '#d1d5db', bold: true });
+      fillRect(tableX + nameW + 9 * colW, row1Y, colW, headerRowH, '#103a2e');
+      drawText(String(parFront), tableX + nameW + 9 * colW + colW / 2, row1Y + headerRowH / 2, { color: '#d1d5db', bold: true });
+      fillRect(tableX + nameW + 19 * colW, row1Y, colW, headerRowH, '#103a2e');
+      drawText(String(parBack), tableX + nameW + 19 * colW + colW / 2, row1Y + headerRowH / 2, { color: '#d1d5db', bold: true });
+      fillRect(tableX + nameW + 20 * colW, row1Y, colW, headerRowH, '#103a2e');
+      drawText(String(parFront + parBack), tableX + nameW + 20 * colW + colW / 2, row1Y + headerRowH / 2, { color: '#d1d5db', bold: true });
 
       // Player rows
       const playerColors = ['#34d399', '#60a5fa', '#fbbf24', '#f87171', '#a78bfa', '#fb923c'];
-      players.forEach((p, pi) => {
-        const rowY = tableY + (2 + pi) * rowH;
+      const scoreColor = (gross: number, par: number) => {
+        const diff = gross - par;
+        if (diff <= -2) return '#eab308';
+        if (diff === -1) return '#ef4444';
+        if (diff === 0) return '#34d399';
+        if (diff === 1) return '#a78bfa';
+        return '#f472b6';
+      };
+
+      playerStats.forEach((s, pi) => {
+        const p = s.player;
+        const rowY = tableY + headerRowH * 2 + pi * playerRowH;
         const bg = pi % 2 === 0 ? '#0a2a1f' : '#0d2f24';
+        const totBg = '#103a2e';
         const pColor = playerColors[pi % playerColors.length];
 
-        drawCell(tableX, rowY, nameW, rowH, p.name.length > 9 ? p.name.slice(0, 9) : p.name, { bg, color: pColor, bold: true, align: 'left', fontSize: 10 });
-
-        let frontGross = 0, frontNet = 0, backGross = 0, backNet = 0;
+        fillRect(tableX, rowY, nameW, playerRowH, bg);
+        const nameText = p.name.length > 12 ? p.name.slice(0, 12) : p.name;
+        if (hcp) {
+          drawText(nameText, tableX + 6, rowY + playerRowH / 2 - 6, { color: pColor, bold: true, align: 'left', fontSize: 11 });
+          drawText('HCP ' + p.handicap, tableX + 6, rowY + playerRowH / 2 + 8, { color: '#6b7280', bold: false, align: 'left', fontSize: 9 });
+        } else {
+          drawText(nameText, tableX + 6, rowY + playerRowH / 2, { color: pColor, bold: true, align: 'left', fontSize: 11 });
+        }
 
         for (let i = 0; i < 18; i++) {
           const hole = holes[i];
-          const gross = game.scores[hole.number]?.[p.id] || 0;
-          const net = gross ? getNetScoreForShare(gross, p.id, hole, game) : 0;
-          const display = gross;
-
-          if (i < 9) { frontGross += gross; frontNet += net; }
-          else { backGross += gross; backNet += net; }
-
-          let color = '#6b7280';
-          if (display > 0) {
-            const diff = display - hole.par;
-            if (diff <= -2) color = '#eab308';
-            else if (diff === -1) color = '#ef4444';
-            else if (diff === 0) color = '#34d399';
-            else if (diff === 1) color = '#a78bfa';
-            else color = '#f472b6';
-          }
-
+          const { gross, net } = s.cells[i];
           const colIdx = i < 9 ? i : i + 1;
-          drawCell(tableX + nameW + colIdx * colW, rowY, colW, rowH, display > 0 ? String(display) : '\u2013', { bg, color, bold: true });
+          const cx = tableX + nameW + colIdx * colW;
+          fillRect(cx, rowY, colW, playerRowH, bg);
+
+          if (gross > 0) {
+            const gColor = scoreColor(gross, hole.par);
+            if (showNet) {
+              drawText(String(gross), cx + colW / 2, rowY + playerRowH / 2 - 8, { color: gColor, bold: true, fontSize: 12 });
+              const netColor = net !== gross ? '#34d399' : '#6b7280';
+              drawText(String(net), cx + colW / 2, rowY + playerRowH / 2 + 10, { color: netColor, bold: true, fontSize: 10 });
+            } else {
+              drawText(String(gross), cx + colW / 2, rowY + playerRowH / 2, { color: gColor, bold: true, fontSize: 12 });
+            }
+          } else {
+            drawText('\u2013', cx + colW / 2, rowY + playerRowH / 2, { color: '#6b7280', bold: true, fontSize: 12 });
+          }
         }
 
-        // OUT — always show gross total
-        drawCell(tableX + nameW + 9 * colW, rowY, colW, rowH, frontGross > 0 ? String(frontGross) : '\u2013', { bg: '#103a2e', color: '#e5e7eb', bold: true });
-        // IN — always show gross total
-        drawCell(tableX + nameW + 19 * colW, rowY, colW, rowH, backGross > 0 ? String(backGross) : '\u2013', { bg: '#103a2e', color: '#e5e7eb', bold: true });
-        // TOT — always show gross total
-        const totalGross = frontGross + backGross;
-        drawCell(tableX + nameW + 20 * colW, rowY, colW, rowH, totalGross > 0 ? String(totalGross) : '\u2013', { bg: '#103a2e', color: '#ffffff', bold: true, fontSize: 12 });
+        const drawTotal = (colIdx: number, gross: number, net: number, bigger: boolean) => {
+          const cx = tableX + nameW + colIdx * colW;
+          fillRect(cx, rowY, colW, playerRowH, totBg);
+          const grossSize = bigger ? 13 : 11;
+          const netSize = bigger ? 11 : 10;
+          if (showNet) {
+            drawText(gross > 0 ? String(gross) : '\u2013', cx + colW / 2, rowY + playerRowH / 2 - 8, { color: '#ffffff', bold: true, fontSize: grossSize });
+            drawText(gross > 0 ? String(net) : '\u2013', cx + colW / 2, rowY + playerRowH / 2 + 10, { color: '#34d399', bold: true, fontSize: netSize });
+          } else {
+            drawText(gross > 0 ? String(gross) : '\u2013', cx + colW / 2, rowY + playerRowH / 2, { color: '#ffffff', bold: true, fontSize: grossSize });
+          }
+        };
+
+        drawTotal(9, s.frontGross, s.frontNet, false);
+        drawTotal(19, s.backGross, s.backNet, false);
+        drawTotal(20, s.frontGross + s.backGross, s.frontNet + s.backNet, true);
       });
 
-      // Footer
-      ctx.fillStyle = '#4b5563';
-      ctx.font = '500 9px system-ui, -apple-system, sans-serif';
-      ctx.fillText('Golf Tracker Pro', padX, H - 14);
-
       // Table grid lines
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.strokeStyle = 'rgba(255,255,255,0.07)';
       ctx.lineWidth = 0.5;
-      for (let r = 0; r <= numDataRows; r++) {
-        const y = tableY + r * rowH;
-        ctx.beginPath(); ctx.moveTo(tableX, y); ctx.lineTo(tableX + nameW + dataCols * colW, y); ctx.stroke();
+      const tableBottom = tableY + headerRowH * 2 + players.length * playerRowH;
+      const tableRight = tableX + nameW + dataCols * colW;
+      ctx.beginPath();
+      ctx.moveTo(tableX, tableY); ctx.lineTo(tableRight, tableY); // top
+      ctx.moveTo(tableX, tableY + headerRowH); ctx.lineTo(tableRight, tableY + headerRowH);
+      ctx.moveTo(tableX, tableY + headerRowH * 2); ctx.lineTo(tableRight, tableY + headerRowH * 2);
+      for (let pi = 1; pi <= players.length; pi++) {
+        const y = tableY + headerRowH * 2 + pi * playerRowH;
+        ctx.moveTo(tableX, y); ctx.lineTo(tableRight, y);
+      }
+      // vertical separators
+      ctx.moveTo(tableX + nameW, tableY); ctx.lineTo(tableX + nameW, tableBottom);
+      ctx.moveTo(tableX + nameW + 9 * colW, tableY); ctx.lineTo(tableX + nameW + 9 * colW, tableBottom);
+      ctx.moveTo(tableX + nameW + 10 * colW, tableY); ctx.lineTo(tableX + nameW + 10 * colW, tableBottom);
+      ctx.moveTo(tableX + nameW + 19 * colW, tableY); ctx.lineTo(tableX + nameW + 19 * colW, tableBottom);
+      ctx.moveTo(tableX + nameW + 20 * colW, tableY); ctx.lineTo(tableX + nameW + 20 * colW, tableBottom);
+      ctx.stroke();
+
+      // Footer
+      drawText('Golf Tracker Pro', padX, H - footerH / 2, { color: '#4b5563', fontSize: 9, align: 'left' });
+      if (showNet) {
+        drawText('Top: gross  \u2022  Bottom: net (handicap adjusted)', W - padX, H - footerH / 2, { color: '#4b5563', fontSize: 9, align: 'right' });
       }
 
-      // Share or download
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setSharingId(null); return; }
-        const fileName = game.courseName.replace(/\s+/g, '_') + '_' + game.date.replace(/\//g, '-') + '.png';
-        const file = new File([blob], fileName, { type: 'image/png' });
+      const blob: Blob | null = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+      if (!blob) { setSharingId(null); return; }
+      const fileName = game.courseName.replace(/\s+/g, '_') + '_' + game.date.replace(/\//g, '-') + '.png';
+      const file = new File([blob], fileName, { type: 'image/png' });
 
-        if (navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: game.courseName + ' Scores',
-              text: 'Scores from ' + game.courseName + ' - ' + game.date
-            });
-          } catch (e) {
-            // User cancelled share
+      let shared = false;
+      if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] }) && typeof navigator.share === 'function') {
+        try {
+          await navigator.share({
+            files: [file],
+            title: game.courseName + ' Scores',
+            text: 'Scores from ' + game.courseName + ' - ' + game.date
+          });
+          shared = true;
+        } catch (e: any) {
+          if (e?.name === 'AbortError') {
+            shared = true;
           }
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
         }
-        setSharingId(null);
-      }, 'image/png');
+      }
+      if (!shared) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+      setSharingId(null);
     } catch (err) {
       console.error('Share failed:', err);
+      alert('Could not generate shareable image. Please try again.');
       setSharingId(null);
     }
   }, []);
