@@ -28,7 +28,12 @@ class ErrorBoundary extends React.Component<Props, State> {
           <p style={{ color: '#94a3b8', marginBottom: 16 }}>{this.state.error?.message}</p>
           <button
             onClick={() => {
-              localStorage.clear();
+              // Only clear in-progress round state. Never touch golf_history —
+              // saved scores are preserved unless the user explicitly deletes
+              // them from the History screen.
+              localStorage.removeItem('golf_settings');
+              localStorage.removeItem('golf_scores');
+              localStorage.removeItem('golf_view');
               window.location.reload();
             }}
             style={{
@@ -41,8 +46,11 @@ class ErrorBoundary extends React.Component<Props, State> {
               cursor: 'pointer',
             }}
           >
-            Clear Data &amp; Reload
+            Reset &amp; Reload
           </button>
+          <p style={{ color: '#64748b', fontSize: 12, marginTop: 12 }}>
+            Your saved scores in History will be preserved.
+          </p>
         </div>
       );
     }
