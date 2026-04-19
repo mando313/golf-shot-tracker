@@ -1,8 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Setup from './components/Setup';
 import Scorecard from './components/Scorecard';
 import History from './components/History';
 import { GameSettings, SavedGame } from './types';
+
+// Back up the raw value of `golf_history` whenever we can't parse it, so
+// a corrupted entry is never silently lost — it can be recovered later.
+function loadSavedGames(): SavedGame[] {
+  try {
+    const saved = localStorage.getItem('golf_history');
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    try {
+      const raw = localStorage.getItem('golf_history');
+      if (raw) localStorage.setItem('golf_history_backup_' + Date.now(), raw);
+    } catch { /* ignore */ }
+    return [];
+  }
+}
 
 export default function App() {
   const [settings, setSettings] = useState<GameSettings | null>(() => {
@@ -19,12 +36,10 @@ export default function App() {
     } catch { return 'setup'; }
   });
 
-  const [savedGames, setSavedGames] = useState<SavedGame[]>(() => {
-    try {
-      const saved = localStorage.getItem('golf_history');
-      return saved ? JSON.parse(saved) : [];
-    } catch { return []; }
-  });
+  const [savedGames, setSavedGames] = useState<SavedGame[]>(loadSavedGames);
+  // Skip the first history-write effect so we never overwrite whatever was
+  // already in localStorage on mount (e.g. with [] after a parse failure).
+  const historyHydrated = useRef(false);
 
   const [viewingGame, setViewingGame] = useState<SavedGame | null>(null);
   const [resetKey, setResetKey] = useState(0);
@@ -42,6 +57,10 @@ export default function App() {
   }, [currentView]);
 
   useEffect(() => {
+    if (!historyHydrated.current) {
+      historyHydrated.current = true;
+      return;
+    }
     localStorage.setItem('golf_history', JSON.stringify(savedGames));
   }, [savedGames]);
 
