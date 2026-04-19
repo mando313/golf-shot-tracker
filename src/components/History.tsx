@@ -1,7 +1,15 @@
 import React, { useState, useCallback } from 'react';
 import { SavedGame, Hole } from '../types';
 import { COURSES } from '../data/courses';
-import { ArrowLeft, Calendar, Clock, MapPin, Trophy, Trash2, Eye, Share2 } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, MapPin, Trophy, Trash2, Eye, Share2, X, Download } from 'lucide-react';
+
+type SharePreview = {
+  dataUrl: string;
+  blob: Blob;
+  fileName: string;
+  title: string;
+  text: string;
+};
 
 type HistoryProps = {
   savedGames: SavedGame[];
@@ -31,6 +39,7 @@ function getNetScoreForShare(gross: number, playerId: string, hole: Hole, game: 
 export default function History({ savedGames, onBack, onDelete, onViewGame }: HistoryProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [sharingId, setSharingId] = useState<string | null>(null);
+  const [preview, setPreview] = useState<SharePreview | null>(null);
 
   const toggleSelection = (id: string) => {
     const newSet = new Set(selectedIds);
@@ -302,32 +311,25 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       if (!blob) { setSharingId(null); return; }
       const fileName = game.courseName.replace(/\s+/g, '_') + '_' + game.date.replace(/\//g, '-') + '.png';
       const file = new File([blob], fileName, { type: 'image/png' });
+      const title = game.courseName + ' Scores';
+      const text = 'Scores from ' + game.courseName + ' - ' + game.date;
 
-      let shared = false;
       if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] }) && typeof navigator.share === 'function') {
         try {
-          await navigator.share({
-            files: [file],
-            title: game.courseName + ' Scores',
-            text: 'Scores from ' + game.courseName + ' - ' + game.date
-          });
-          shared = true;
+          await navigator.share({ files: [file], title, text });
+          setSharingId(null);
+          return;
         } catch (e: any) {
           if (e?.name === 'AbortError') {
-            shared = true;
+            setSharingId(null);
+            return;
           }
+          // Fall through to preview modal on other errors
         }
       }
-      if (!shared) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
+
+      const dataUrl = canvas.toDataURL('image/png');
+      setPreview({ dataUrl, blob, fileName, title, text });
       setSharingId(null);
     } catch (err) {
       console.error('Share failed:', err);
@@ -335,6 +337,36 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
       setSharingId(null);
     }
   }, []);
+
+  const handleDownloadPreview = useCallback(() => {
+    if (!preview) return;
+    const url = URL.createObjectURL(preview.blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = preview.fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }, [preview]);
+
+  const handleSharePreview = useCallback(async () => {
+    if (!preview) return;
+    const file = new File([preview.blob], preview.fileName, { type: 'image/png' });
+    if (typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] }) && typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ files: [file], title: preview.title, text: preview.text });
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') {
+          console.error('Share failed:', e);
+        }
+      }
+    }
+  }, [preview]);
+
+  const canUseWebShare = typeof navigator !== 'undefined' &&
+    typeof navigator.canShare === 'function' &&
+    typeof navigator.share === 'function';
 
   return (
     <div className="max-w-4xl mx-auto px-4 pt-10 pb-4 md:p-6">
@@ -442,6 +474,57 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {preview && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setPreview(null)}
+        >
+          <div
+            className="bg-slate-900 rounded-2xl border border-slate-700 max-w-3xl w-full max-h-[95vh] overflow-hidden flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+              <h3 className="text-slate-100 font-semibold">Share Scorecard</h3>
+              <button
+                onClick={() => setPreview(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="overflow-auto p-4 flex-1">
+              <img
+                src={preview.dataUrl}
+                alt="Scorecard"
+                className="w-full h-auto rounded-xl shadow-lg block"
+              />
+              <p className="text-xs text-slate-400 text-center mt-3">
+                Long-press the image to save or share it from your device.
+              </p>
+            </div>
+            <div className="flex gap-2 p-3 border-t border-slate-800">
+              {canUseWebShare && (
+                <button
+                  onClick={handleSharePreview}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 rounded-xl font-medium transition-colors"
+                >
+                  <Share2 className="w-4 h-4" />
+                  Share
+                </button>
+              )}
+              <button
+                onClick={handleDownloadPreview}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700 rounded-xl font-medium transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
