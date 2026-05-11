@@ -66,7 +66,7 @@ export default function App() {
   };
 
   return (
-    <div className="bg-slate-50 font-sans text-slate-900 safe-bottom px-2 pt-2 pb-4" style={{ minHeight: '100dvh' }}>
+    <div className="bg-slate-50 font-sans text-slate-900 safe-top safe-bottom px-2 pb-4" style={{ minHeight: '100dvh' }}>
       {currentView === 'setup' ? (
         <Setup 
           key={`setup-${resetKey}-${settings ? 'resuming' : 'new'}`}

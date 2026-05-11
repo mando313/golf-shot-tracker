@@ -229,6 +229,7 @@ export default function HoleCard({
             const net = gross > 0 && handicapAdjusted ? getNetScore(gross, p.id, hole) : null;
             const overUnder = getOverUnderPar(p.id);
             const scoreLabel = gross > 0 ? getScoreLabel(gross, hole.par) : null;
+            const strokesReceived = handicapAdjusted ? (100 - getNetScore(100, p.id, hole)) : 0;
 
             return (
               <div key={p.id} className="p-4">
@@ -242,6 +243,11 @@ export default function HoleCard({
                           p.team === 'A' ? 'bg-emerald-950 text-emerald-400' : 'bg-blue-950 text-blue-400'
                         }`}>
                           {p.team === 'A' ? 'A' : 'B'}
+                        </span>
+                      )}
+                      {strokesReceived > 0 && (
+                        <span className="text-xs font-medium text-amber-400 bg-amber-950 px-1.5 py-0.5 rounded border border-amber-800">
+                          Gets {strokesReceived} stroke{strokesReceived > 1 ? 's' : ''}
                         </span>
                       )}
                     </div>

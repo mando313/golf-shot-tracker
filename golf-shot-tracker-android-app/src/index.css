@@ -30,7 +30,7 @@ input[type="number"] {
 }
 
 .safe-top {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(env(safe-area-inset-top), 0.5rem);
 }
 
 /* Scrollbar hide for mobile-like feel */

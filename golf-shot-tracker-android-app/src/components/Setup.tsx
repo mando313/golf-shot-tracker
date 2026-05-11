@@ -31,6 +31,7 @@ export default function Setup({ initialSettings, onComplete, isResuming, onViewH
   const [playMode, setPlayMode] = useState<PlayMode>(initialSettings?.playMode || 'Individual');
   const [gameFormat, setGameFormat] = useState<GameFormat>(initialSettings?.gameFormat || 'Match Play');
   const [handicapAdjusted, setHandicapAdjusted] = useState<boolean>(initialSettings?.handicapAdjusted || false);
+  const [handicapReduction, setHandicapReduction] = useState<number>(initialSettings?.handicapReduction ?? 4);
   const [showConfirm, setShowConfirm] = useState(false);
 
   // Update selected tee if course changes and current tee is not available
@@ -111,6 +112,7 @@ export default function Setup({ initialSettings, onComplete, isResuming, onViewH
       playMode,
       gameFormat,
       handicapAdjusted,
+      handicapReduction,
     });
   };
 
@@ -339,6 +341,23 @@ export default function Setup({ initialSettings, onComplete, isResuming, onViewH
               <p className="text-sm text-slate-500 mt-1 ml-8">
                 Enter handicaps for each player above.
               </p>
+            )}
+            {handicapAdjusted && (gameFormat === 'Skins' || gameFormat === 'Match Play') && (
+              <div className="mt-3 ml-8 flex items-center gap-3">
+                <label className="text-sm font-medium text-slate-600 whitespace-nowrap">Handicap Reduction</label>
+                <input
+                  type="number"
+                  value={handicapReduction}
+                  onChange={(e) => {
+                    const val = parseInt(e.target.value);
+                    setHandicapReduction(isNaN(val) ? 0 : Math.max(0, Math.min(18, val)));
+                  }}
+                  className="w-20 p-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-center text-sm"
+                  min="0"
+                  max="18"
+                />
+                <p className="text-xs text-slate-500">Strokes subtracted from each player's handicap for net score calculation</p>
+              </div>
             )}
           </div>
         </section>

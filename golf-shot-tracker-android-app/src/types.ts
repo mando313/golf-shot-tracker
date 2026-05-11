@@ -36,6 +36,7 @@ export type GameSettings = {
   playMode: PlayMode;
   gameFormat: GameFormat;
   handicapAdjusted: boolean;
+  handicapReduction: number;
 };
 
 export type Scores = Record<number, Record<string, number>>;

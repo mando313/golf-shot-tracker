@@ -51,7 +51,7 @@ export default function Scorecard({ settings, onBack, onClearData, onSaveScore, 
     
     let strokesReceived = 0;
     if (settings.gameFormat === 'Skins' || settings.gameFormat === 'Match Play') {
-      let h = player.handicap - 4;
+      let h = player.handicap - (settings.handicapReduction ?? 4);
       while (h > 0) {
         if (hole.handicap <= h) strokesReceived++;
         h -= 18;

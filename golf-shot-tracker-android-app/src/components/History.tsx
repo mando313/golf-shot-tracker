@@ -2,6 +2,8 @@ import React, { useState, useCallback } from 'react';
 import { SavedGame, Hole } from '../types';
 import { COURSES } from '../data/courses';
 import { ArrowLeft, Calendar, Clock, MapPin, Trophy, Trash2, Eye, Share2 } from 'lucide-react';
+import { Share } from '@capacitor/share';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 
 type HistoryProps = {
   savedGames: SavedGame[];
@@ -15,7 +17,7 @@ function getNetScoreForShare(gross: number, playerId: string, hole: Hole, game: 
   const player = game.settings.players.find(p => p.id === playerId)!;
   let strokesReceived = 0;
   if (game.settings.gameFormat === 'Skins' || game.settings.gameFormat === 'Match Play') {
-    let h = player.handicap - 4;
+    let h = player.handicap - (game.settings.handicapReduction ?? 4);
     while (h > 0) {
       if (hole.handicap <= h) strokesReceived++;
       h -= 18;
@@ -227,34 +229,39 @@ export default function History({ savedGames, onBack, onDelete, onViewGame }: Hi
         ctx.beginPath(); ctx.moveTo(tableX, y); ctx.lineTo(tableX + nameW + dataCols * colW, y); ctx.stroke();
       }
 
-      // Share or download
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setSharingId(null); return; }
-        const fileName = game.courseName.replace(/\s+/g, '_') + '_' + game.date.replace(/\//g, '-') + '.png';
-        const file = new File([blob], fileName, { type: 'image/png' });
-        
-        if (navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({
-              files: [file],
-              title: game.courseName + ' Scores',
-              text: 'Scores from ' + game.courseName + ' - ' + game.date
-            });
-          } catch (e) {
-            // User cancelled share
+      // Share or download natively via Capacitor
+      const dataUrl = canvas.toDataURL('image/png');
+      const base64Data = dataUrl.split(',')[1];
+      const fileName = game.courseName.replace(/\s+/g, '_') + '_' + game.date.replace(/\//g, '-') + '.png';
+
+      try {
+        const savedFile = await Filesystem.writeFile({
+          path: fileName,
+          data: base64Data,
+          directory: Directory.Cache
+        });
+
+        await Share.share({
+          title: game.courseName + ' Scores',
+          text: 'Scores from ' + game.courseName + ' - ' + game.date,
+          url: savedFile.uri,
+          dialogTitle: 'Share Scorecard'
+        });
+      } catch (e) {
+        console.error('Capacitor share failed, falling back to web share:', e);
+        // Fallback for web/desktop if capacitor fails
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const file = new File([blob], fileName, { type: 'image/png' });
+          if (navigator.canShare?.({ files: [file] })) {
+            try { await navigator.share({ files: [file], title: game.courseName + ' Scores', text: 'Scores from ' + game.courseName + ' - ' + game.date }); } catch (err) {}
+          } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
           }
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        }
-        setSharingId(null);
-      }, 'image/png');
+        }, 'image/png');
+      }
+      setSharingId(null);
     } catch (err) {
       console.error('Share failed:', err);
       setSharingId(null);

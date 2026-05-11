@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: 'https',
     // Load from GitHub Pages so the app always gets the latest version
-    url: 'https://mando313.github.io/golf-shot-tracker/',
+    // url: 'https://mando313.github.io/golf-shot-tracker/',
     cleartext: false,
   },
   plugins: {

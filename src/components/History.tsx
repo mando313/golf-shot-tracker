@@ -23,7 +23,7 @@ function getNetScoreForShare(gross: number, playerId: string, hole: Hole, game: 
   const player = game.settings.players.find(p => p.id === playerId)!;
   let strokesReceived = 0;
   if (game.settings.gameFormat === 'Skins' || game.settings.gameFormat === 'Match Play') {
-    let h = player.handicap - 4;
+    let h = player.handicap - (game.settings.handicapReduction ?? 4);
     while (h > 0) {
       if (hole.handicap <= h) strokesReceived++;
       h -= 18;
